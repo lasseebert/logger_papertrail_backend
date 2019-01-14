@@ -103,7 +103,19 @@ defmodule LoggerPapertrailBackend.Logger do
 
 
   defp log_event(level, msg, ts, md, %{colors: colors, system_name: system_name } = state) do
-    application = system_name || Keyword.get(md, :application, "unknown_elixir_application")
+    application =
+      [
+        # From metadata
+        Keyword.get(md, :system_name),
+        # From config
+        system_name,
+        # From running application
+        Keyword.get(md, :application),
+        # Default
+        "unknown_elixir_application"
+      ]
+      |> Enum.find(& &1)
+
     procid = Keyword.get(md, :module, nil)
 
     format_event(level, msg, ts, md, state)
